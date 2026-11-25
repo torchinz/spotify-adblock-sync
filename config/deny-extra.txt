@@ -1,0 +1,7 @@
+# Your own additions. Always blocked unless also listed in allow.txt.
+# Each line also blocks every subdomain under it.
+adeventtracker.spotify.com
+ads-fa.spotify.com
+analytics.spotify.com
+crashdump.spotify.com
+video-ak.cdn.spotify.com

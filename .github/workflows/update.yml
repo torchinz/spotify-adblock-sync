@@ -1,0 +1,47 @@
+name: Update Spotify blocklist
+
+on:
+  schedule:
+    - cron: "37 21 * * *"   # daily, 03:07 IST
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ["config/**", "scripts/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-blocklist
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build lists
+        run: python3 scripts/build.py
+
+      - name: Sync NextDNS denylist (iPhone, router, any NextDNS device)
+        env:
+          NEXTDNS_API_KEY: ${{ secrets.NEXTDNS_API_KEY }}
+          NEXTDNS_PROFILE: ${{ secrets.NEXTDNS_PROFILE }}
+        run: python3 scripts/sync_nextdns.py
+
+      - name: Commit updated lists
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist state
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update Spotify blocklist $(date -u +%F)"
+            git push
+          fi
