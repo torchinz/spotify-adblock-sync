@@ -8,8 +8,9 @@ and refreshes them on a schedule. Use these subscriptions instead of the static
 After adding each one, check the entry count it shows. A count of 0 means it
 couldn't read that format, so remove it.
 
-## 1. Spotify (from this repo)
-    https://raw.githubusercontent.com/<YOUR-GITHUB-USER>/spotify-adblock-sync/main/dist/spotify-ads.txt
+## 1. From this repo (subscribe to both)
+    https://raw.githubusercontent.com/torchinz/spotify-adblock-sync/main/dist/spotify-ads.txt
+    https://raw.githubusercontent.com/torchinz/spotify-adblock-sync/main/dist/ubo-all.txt
 (The repo must be public for this link to work. If you keep it private, skip this:
 the NextDNS sync already covers the Mac when it uses NextDNS.)
 

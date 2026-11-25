@@ -1,6 +1,19 @@
 # spotify-adblock-sync
 
-A Spotify ad and tracker blocklist that refreshes itself daily and reaches every device:
+Two auto-updating blocklists, refreshed every night:
+
+| List | Little Snitch URL | NextDNS |
+|---|---|---|
+| Spotify ads & trackers | `https://raw.githubusercontent.com/torchinz/spotify-adblock-sync/main/dist/spotify-ads.txt` | pushed to Denylist |
+| Every uBlock Origin filter list (network-level rules, ~167k domains) | `https://raw.githubusercontent.com/torchinz/spotify-adblock-sync/main/dist/ubo-all.txt` | uBO's own lists (~3.5k) pushed to Denylist; EasyList, EasyPrivacy, AdGuard etc. are built-in NextDNS lists |
+
+How the uBlock list is built: `scripts/build_ubo.py` reads uBO's catalogue, downloads all its
+filter lists (except Unbreak, LAN-block, URL-tracking and Experimental), keeps only rules that
+block a whole domain, applies uBO's own `@@` exceptions, and never blocks anything in
+`config/never-block.txt` (Apple, Google, Microsoft, WhatsApp, banks' parent domains, social apps,
+Spotify, GitHub, NextDNS). Per-list counts: `dist/ubo-stats.txt`.
+
+The Spotify list works like this:
 
 ```
  upstream Spotify lists ──► GitHub Action (daily) ──► dist/spotify-ads.txt ──► Little Snitch (Mac)
@@ -12,9 +25,10 @@ A Spotify ad and tracker blocklist that refreshes itself daily and reaches every
   Little Snitch and NextDNS pick up the changes on their own.
 * **Doesn't break playback.** Hosts Spotify needs to connect, log in or stream are never blocked
   (`scripts/build.py` rules + `config/allow.txt`).
-* **Leaves your own NextDNS entries alone.** The sync removes only domains it added itself
-  (`state/nextdns-managed.txt`). It stops if it would remove more than 200 entries, if the
-  upstream list is empty, or if the Denylist would go over NextDNS's 5,000-entry cap.
+* **Leaves your own NextDNS entries alone.** They're recorded in `state/nextdns-yours.txt` and
+  always kept, as is anything you add by hand later. The sync updates the Denylist in one bulk
+  request. It stops if it would remove more than half of its own entries, if the Spotify list
+  is empty, or if the Denylist would go over NextDNS's 5,000-entry cap.
 
 ## One-time setup (about 10 minutes)
 
@@ -58,6 +72,7 @@ See [`mac/little-snitch-blocklists.md`](mac/little-snitch-blocklists.md). In sho
 ## Everyday use
 | You want to… | Do this |
 |---|---|
+| Unblock a site the uBlock list broke | Add its domain to `config/never-block.txt`, commit. |
 | Fix Spotify not connecting or playing | Find the blocked host (NextDNS Logs or Little Snitch), add it to `config/allow.txt`, commit. It's unblocked everywhere within a minute. |
 | Block another host | Add it to `config/deny-extra.txt`, commit. |
 | Add another upstream list | Add its URL to `config/sources.txt`. |
