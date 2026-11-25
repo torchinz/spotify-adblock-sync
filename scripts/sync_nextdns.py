@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Sync dist/nextdns-*.txt into a NextDNS profile's Denylist.
+"""Sync dist/nextdns-*.txt into a NextDNS profile's Denylist (one PUT per run).
 
 dist/nextdns-denylist.txt (Spotify) always goes in first; dist/nextdns-ubo.txt fills
 the remaining room under NextDNS's 5,000-entry cap.
 
-Only touches entries this script added itself (tracked in state/nextdns-managed.txt).
-Domains you added by hand are never removed, even if they are also on the list.
+Your own entries are recorded in state/nextdns-yours.txt on the first run and are always
+kept, as is anything you add by hand later. Only the script's own entries change.
 
 Env:
   NEXTDNS_API_KEY   from https://my.nextdns.io/account (bottom of page)
@@ -26,6 +26,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 PRIORITY = ROOT / "dist" / "nextdns-denylist.txt"
 EXTRA = ROOT / "dist" / "nextdns-ubo.txt"
 STATE = ROOT / "state" / "nextdns-managed.txt"
+YOURS = ROOT / "state" / "nextdns-yours.txt"
 BASE = os.environ.get("NEXTDNS_API_BASE", "https://api.nextdns.io").rstrip("/")
 KEY = os.environ.get("NEXTDNS_API_KEY", "")
 PROFILE = os.environ.get("NEXTDNS_PROFILE", "")
@@ -48,7 +49,7 @@ def call(method, path, body=None):
         req = urllib.request.Request(url, data=data, method=method, headers={
             "X-Api-Key": KEY, "Content-Type": "application/json", "User-Agent": "spotify-adblock-sync"})
         try:
-            with urllib.request.urlopen(req, timeout=30) as r:
+            with urllib.request.urlopen(req, timeout=120) as r:
                 txt = r.read().decode() or "{}"
                 return json.loads(txt)
         except urllib.error.HTTPError as e:
@@ -65,27 +66,39 @@ def main():
     priority = lines(PRIORITY)
     if not priority:
         sys.exit("ERROR Spotify list is empty -- refusing to sync")
+    extra = lines(EXTRA)
     managed = lines(STATE)
-    current = {e["id"] for e in call("GET", "/denylist").get("data", [])}
+    entries = call("GET", "/denylist").get("data", [])
+    current = {e["id"] for e in entries}
+    active = {e["id"]: e.get("active", True) for e in entries}
 
-    # Room = cap - entries that are yours (not ours) - margin
-    yours = current - managed
+    # Your own entries: recorded once, then never touched.
+    if YOURS.exists():
+        yours = lines(YOURS)
+    else:
+        yours = current - managed - priority - extra
+        YOURS.write_text("# Your own NextDNS Denylist entries at setup -- never modified by the sync\n"
+                         + "\n".join(sorted(yours)) + "\n")
+    yours |= current - managed - priority - extra   # anything you add later by hand
+
     room = NEXTDNS_LIMIT - len(yours) - SAFETY_MARGIN
     desired = set(priority)
-    for d in sorted(lines(EXTRA)):
+    for d in sorted(extra):
         if len(desired) >= room:
-            print(f"note: NextDNS cap reached; {len(lines(EXTRA) - desired)} uBO domains left to Little Snitch only")
+            print(f"note: NextDNS cap reached; {len(extra - desired)} uBO domains go to Little Snitch only")
             break
         desired.add(d)
-    to_add = sorted(desired - current)
-    to_remove = sorted((managed - desired) & current)
+    desired -= yours
 
-    print(f"profile {PROFILE}: denylist has {len(current)} | desired {len(desired)} | "
-          f"managed {len(managed)} | add {len(to_add)} | remove {len(to_remove)}")
-    if managed and len(to_remove) > MAX_REMOVAL_SHARE * len(managed):
-        sys.exit(f"ERROR would remove {len(to_remove)} of {len(managed)} managed entries -- check upstream; nothing changed")
-    if len(current) - len(to_remove) + len(to_add) > NEXTDNS_LIMIT:
-        sys.exit(f"ERROR would exceed NextDNS's {NEXTDNS_LIMIT}-entry Denylist limit -- nothing changed")
+    ours_now = (current - yours)            # includes entries an interrupted run added
+    to_add = sorted(desired - current)
+    to_remove = sorted(ours_now - desired)
+    print(f"profile {PROFILE}: denylist has {len(current)} (yours {len(yours)}) | desired {len(desired)} | "
+          f"add {len(to_add)} | remove {len(to_remove)}", flush=True)
+    if ours_now and len(to_remove) > MAX_REMOVAL_SHARE * max(len(ours_now), 1) and len(to_remove) > 50:
+        sys.exit(f"ERROR would remove {len(to_remove)} of {len(ours_now)} entries -- check upstream; nothing changed")
+    if len(yours) + len(desired) > NEXTDNS_LIMIT:
+        sys.exit("ERROR would exceed NextDNS's 5,000-entry limit -- nothing changed")
     if DRY:
         for d in to_add[:20]:
             print("  + " + d)
@@ -93,34 +106,28 @@ def main():
             print("  - " + d)
         return
 
-    added, removed, failed = set(), set(), []
-    for d in to_add:
-        try:
-            res = call("POST", "/denylist", {"id": d, "active": True})
-            if res.get("errors"):
-                failed.append((d, res["errors"]))
-            else:
-                added.add(d)
-        except RuntimeError as e:
-            failed.append((d, str(e)))
-        time.sleep(0.12)
-    for d in to_remove:
-        try:
-            call("DELETE", "/denylist/" + urllib.parse.quote(d, safe=""))
-            removed.add(d)
-        except RuntimeError as e:
-            failed.append((d, str(e)))
-        time.sleep(0.15)
-
-    # Entries we added stay "managed"; entries that already existed (yours) never become managed.
-    new_managed = ((managed & current) | added) - removed
+    if to_add or to_remove:
+        final = sorted(yours | desired)
+        body = [{"id": d, "active": active.get(d, True)} for d in final]
+        call("PUT", "/denylist", body)       # one request replaces the whole list
+        after = {e["id"] for e in call("GET", "/denylist").get("data", [])}
+        missing_yours = yours - after
+        if missing_yours:
+            # Should never happen; put them straight back.
+            for d in sorted(missing_yours):
+                call("POST", "/denylist", {"id": d, "active": active.get(d, True)})
+            sys.exit(f"ERROR {len(missing_yours)} of your entries went missing and were restored")
+        rejected = set(final) - after
+        print(f"denylist now {len(after)} | added {len(set(to_add) - rejected)} | removed {len(to_remove)} | "
+              f"rejected by NextDNS {len(rejected)}", flush=True)
+        for d in sorted(rejected)[:10]:
+            print("  ! rejected " + d)
+        new_managed = (after - yours)
+    else:
+        print("no changes")
+        new_managed = desired & current
     STATE.parent.mkdir(exist_ok=True)
-    STATE.write_text("# Denylist entries added by sync_nextdns.py (do not edit)\n" + "\n".join(sorted(new_managed)) + "\n")
-    print(f"added {len(added)} | removed {len(removed)} | failed {len(failed)}")
-    for d, err in failed[:10]:
-        print(f"  ! {d}: {err}")
-    if failed and not added and not removed:
-        sys.exit(1)
+    STATE.write_text("# Denylist entries managed by sync_nextdns.py (do not edit)\n" + "\n".join(sorted(new_managed)) + "\n")
 
 
 if __name__ == "__main__":

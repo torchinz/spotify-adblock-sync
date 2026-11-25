@@ -18,7 +18,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -36,9 +36,10 @@ jobs:
         env:
           NEXTDNS_API_KEY: ${{ secrets.NEXTDNS_API_KEY }}
           NEXTDNS_PROFILE: ${{ secrets.NEXTDNS_PROFILE }}
-        run: python3 scripts/sync_nextdns.py
+        run: python3 -u scripts/sync_nextdns.py
 
       - name: Commit updated lists
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
