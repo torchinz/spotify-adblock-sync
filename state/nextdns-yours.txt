@@ -1,0 +1,17 @@
+# Your own NextDNS Denylist entries at setup -- never modified by the sync
+cantrill.io
+crisp.chat
+facebook.com
+filestackapi.com
+getroman.com
+instagram.com
+king.com
+maclarencollege.com
+magic.link
+producthunt.com
+ro.co
+slatedigital.com
+teachablecdn.cloud
+teachablecdn.com
+wistia.com
+yahoodns.net
