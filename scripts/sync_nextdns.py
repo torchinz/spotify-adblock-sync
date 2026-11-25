@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Sync dist/nextdns-denylist.txt into a NextDNS profile's Denylist.
+"""Sync dist/nextdns-*.txt into a NextDNS profile's Denylist.
+
+dist/nextdns-denylist.txt (Spotify) always goes in first; dist/nextdns-ubo.txt fills
+the remaining room under NextDNS's 5,000-entry cap.
 
 Only touches entries this script added itself (tracked in state/nextdns-managed.txt).
 Domains you added by hand are never removed, even if they are also on the list.
@@ -20,14 +23,16 @@ import urllib.parse
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-LIST = ROOT / "dist" / "nextdns-denylist.txt"
+PRIORITY = ROOT / "dist" / "nextdns-denylist.txt"
+EXTRA = ROOT / "dist" / "nextdns-ubo.txt"
 STATE = ROOT / "state" / "nextdns-managed.txt"
 BASE = os.environ.get("NEXTDNS_API_BASE", "https://api.nextdns.io").rstrip("/")
 KEY = os.environ.get("NEXTDNS_API_KEY", "")
 PROFILE = os.environ.get("NEXTDNS_PROFILE", "")
 DRY = os.environ.get("DRY_RUN") == "1"
 NEXTDNS_LIMIT = 5000          # NextDNS caps a Denylist at 5,000 entries
-MAX_REMOVALS_PER_RUN = 200    # guard against a broken upstream wiping the list
+SAFETY_MARGIN = 100           # keep a few slots free for entries you add by hand
+MAX_REMOVAL_SHARE = 0.5       # refuse to remove more than half of our own entries in one run
 
 
 def lines(path):
@@ -57,19 +62,28 @@ def main():
     if not KEY or not PROFILE:
         print("NEXTDNS_API_KEY / NEXTDNS_PROFILE not set -- skipping NextDNS sync.")
         return
-    desired = lines(LIST)
-    if not desired:
-        sys.exit("ERROR desired list is empty -- refusing to sync")
+    priority = lines(PRIORITY)
+    if not priority:
+        sys.exit("ERROR Spotify list is empty -- refusing to sync")
     managed = lines(STATE)
-
     current = {e["id"] for e in call("GET", "/denylist").get("data", [])}
+
+    # Room = cap - entries that are yours (not ours) - margin
+    yours = current - managed
+    room = NEXTDNS_LIMIT - len(yours) - SAFETY_MARGIN
+    desired = set(priority)
+    for d in sorted(lines(EXTRA)):
+        if len(desired) >= room:
+            print(f"note: NextDNS cap reached; {len(lines(EXTRA) - desired)} uBO domains left to Little Snitch only")
+            break
+        desired.add(d)
     to_add = sorted(desired - current)
     to_remove = sorted((managed - desired) & current)
 
     print(f"profile {PROFILE}: denylist has {len(current)} | desired {len(desired)} | "
           f"managed {len(managed)} | add {len(to_add)} | remove {len(to_remove)}")
-    if len(to_remove) > MAX_REMOVALS_PER_RUN:
-        sys.exit(f"ERROR would remove {len(to_remove)} entries (> {MAX_REMOVALS_PER_RUN}) -- check upstream; nothing changed")
+    if managed and len(to_remove) > MAX_REMOVAL_SHARE * len(managed):
+        sys.exit(f"ERROR would remove {len(to_remove)} of {len(managed)} managed entries -- check upstream; nothing changed")
     if len(current) - len(to_remove) + len(to_add) > NEXTDNS_LIMIT:
         sys.exit(f"ERROR would exceed NextDNS's {NEXTDNS_LIMIT}-entry Denylist limit -- nothing changed")
     if DRY:
@@ -89,7 +103,7 @@ def main():
                 added.add(d)
         except RuntimeError as e:
             failed.append((d, str(e)))
-        time.sleep(0.15)
+        time.sleep(0.12)
     for d in to_remove:
         try:
             call("DELETE", "/denylist/" + urllib.parse.quote(d, safe=""))

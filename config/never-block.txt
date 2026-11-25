@@ -1,0 +1,39 @@
+# Domains no blocklist is allowed to block (each line also covers its subdomains).
+# Keeps the big uBlock-derived list from cutting off things your devices rely on.
+apple.com
+icloud.com
+mzstatic.com
+apple-dns.net
+github.com
+githubusercontent.com
+nextdns.io
+obdev.at
+microsoft.com
+office.com
+office365.com
+live.com
+google.com
+googleapis.com
+gstatic.com
+youtube.com
+whatsapp.com
+whatsapp.net
+gov.in
+nic.in
+gujarat.gov.in
+# Social apps (anti-social-widget lists would otherwise block the apps themselves)
+facebook.com
+fbcdn.net
+instagram.com
+cdninstagram.com
+linkedin.com
+licdn.com
+x.com
+twitter.com
+twimg.com
+reddit.com
+redditmedia.com
+# Spotify itself
+spotify.com
+scdn.co
+spotifycdn.com
