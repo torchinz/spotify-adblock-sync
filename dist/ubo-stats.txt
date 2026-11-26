@@ -21,9 +21,9 @@
      40 LVA-0                        🇱🇻lv: Latvian List
     139 MKD-0                        🇲🇰mk: Macedonian adBlock Filters
      70 NLD-0                        🇳🇱nl 🇧🇪be: AdGuard Dutch
-    149 NOR-0                        🇳🇴no 🇩🇰dk 🇮🇸is: Dandelion Sprouts nordiske filtre
+    150 NOR-0                        🇳🇴no 🇩🇰dk 🇮🇸is: Dandelion Sprouts nordiske filtre
     294 POL-0                        🇵🇱pl: Oficjalne Polskie Filtry do uBlocka Origin
-  23168 POL-3                        🇵🇱pl: CERT.PL's Warning List
+  23357 POL-3                        🇵🇱pl: CERT.PL's Warning List
      99 ROU-1                        🇷🇴ro 🇲🇩md: Romanian Ad (ROad) Block List Light
       0 RUS-0                        🇷🇺ru 🇺🇦ua 🇺🇿uz 🇰🇿kz: RU AdList
     527 RUS-1                        🇷🇺ru 🇺🇦ua 🇺🇿uz 🇰🇿kz: RU AdList: Counters
@@ -44,16 +44,16 @@ SKIP  adguard-spyware-url          strips URL parameters; contains no domains
     257 adguard-widgets              AdGuard – Widgets
      74 ara-0                        🇪🇬eg 🇸🇦sa 🇲🇦ma 🇩🇿dz: Liste AR
 SKIP  block-lan                    would block your own router, printer and other LAN devices
-  16339 curben-phishing              Phishing URL Blocklist
+  16310 curben-phishing              Phishing URL Blocklist
   13117 dpollock-0                   Dan Pollock’s hosts file
-  47015 easylist                     EasyList
+  47173 easylist                     EasyList
     321 easylist-annoyances          EasyList – Other Annoyances
     181 easylist-chat                EasyList – Chat Widgets
      24 easylist-newsletters         EasyList – Newsletter Notices
     203 easylist-notifications       EasyList – Notifications
-  47322 easyprivacy                  EasyPrivacy
+  47326 easyprivacy                  EasyPrivacy
      22 fanboy-ai-suggestions        EasyList – AI Widgets
-    314 fanboy-cookiemonster         EasyList – Cookie Notices
+    316 fanboy-cookiemonster         EasyList – Cookie Notices
      61 fanboy-social                EasyList – Social Widgets
       2 fanboy-thirdparty_social     Fanboy – Anti-Facebook
    3557 plowe-0                      Peter Lowe’s Ad and tracking server list
@@ -68,6 +68,6 @@ SKIP  ublock-experimental          uBO's own staging list; known to break sites
     101 ublock-privacy               uBlock filters – Privacy
       8 ublock-quick-fixes           uBlock filters – Quick fixes
 SKIP  ublock-unbreak               allow rules only
-    597 urlhaus-1                    Online Malicious URL Blocklist
+    592 urlhaus-1                    Online Malicious URL Blocklist
 
-lists used 67/67 | raw 184684 | exceptions 106 | final (subdomains collapsed) 167072 | NextDNS part 3537
+lists used 67/67 | raw 184989 | exceptions 106 | final (subdomains collapsed) 167260 | NextDNS part 3537
