@@ -1,6 +1,6 @@
       1 ALB-0                        🇦🇱al 🇽🇰xk: Adblock List for Albania
       5 BGR-0                        🇧🇬bg: Bulgarian Adblock list
-   6031 CHN-0                        🇨🇳cn 🇹🇼tw: AdGuard Chinese (中文)
+   6045 CHN-0                        🇨🇳cn 🇹🇼tw: AdGuard Chinese (中文)
      93 CZE-0                        🇨🇿cz 🇸🇰sk: EasyList Czech and Slovak
     335 DEU-0                        🇩🇪de 🇨🇭ch 🇦🇹at: EasyList Germany
       2 EST-0                        🇪🇪ee: Eesti saitidele kohandatud filter
@@ -23,7 +23,7 @@
      70 NLD-0                        🇳🇱nl 🇧🇪be: AdGuard Dutch
     150 NOR-0                        🇳🇴no 🇩🇰dk 🇮🇸is: Dandelion Sprouts nordiske filtre
     294 POL-0                        🇵🇱pl: Oficjalne Polskie Filtry do uBlocka Origin
-  23300 POL-3                        🇵🇱pl: CERT.PL's Warning List
+  23104 POL-3                        🇵🇱pl: CERT.PL's Warning List
      99 ROU-1                        🇷🇴ro 🇲🇩md: Romanian Ad (ROad) Block List Light
       0 RUS-0                        🇷🇺ru 🇺🇦ua 🇺🇿uz 🇰🇿kz: RU AdList
     527 RUS-1                        🇷🇺ru 🇺🇦ua 🇺🇿uz 🇰🇿kz: RU AdList: Counters
@@ -34,29 +34,29 @@
    1819 UKR-0                        🇺🇦ua: AdGuard Ukrainian
      72 VIE-1                        🇻🇳vn: ABPVN List
     192 adguard-cookies              AdGuard – Cookie Notices
-  14327 adguard-generic              AdGuard – Ads
+  14329 adguard-generic              AdGuard – Ads
     953 adguard-mobile               AdGuard – Mobile Ads
       2 adguard-mobile-app-banners   AdGuard – Mobile App Banners
      15 adguard-other-annoyances     AdGuard – Other Annoyances
-    421 adguard-popup-overlays       AdGuard – Popup Overlays
+    422 adguard-popup-overlays       AdGuard – Popup Overlays
      49 adguard-social               AdGuard – Social Widgets
 SKIP  adguard-spyware-url          strips URL parameters; contains no domains
-    257 adguard-widgets              AdGuard – Widgets
+    258 adguard-widgets              AdGuard – Widgets
      74 ara-0                        🇪🇬eg 🇸🇦sa 🇲🇦ma 🇩🇿dz: Liste AR
 SKIP  block-lan                    would block your own router, printer and other LAN devices
-  16288 curben-phishing              Phishing URL Blocklist
+  16265 curben-phishing              Phishing URL Blocklist
   13117 dpollock-0                   Dan Pollock’s hosts file
-  47598 easylist                     EasyList
+  47909 easylist                     EasyList
     321 easylist-annoyances          EasyList – Other Annoyances
     181 easylist-chat                EasyList – Chat Widgets
      24 easylist-newsletters         EasyList – Newsletter Notices
     203 easylist-notifications       EasyList – Notifications
-  47335 easyprivacy                  EasyPrivacy
+  47343 easyprivacy                  EasyPrivacy
      22 fanboy-ai-suggestions        EasyList – AI Widgets
     316 fanboy-cookiemonster         EasyList – Cookie Notices
      61 fanboy-social                EasyList – Social Widgets
       2 fanboy-thirdparty_social     Fanboy – Anti-Facebook
-   3559 plowe-0                      Peter Lowe’s Ad and tracking server list
+   3565 plowe-0                      Peter Lowe’s Ad and tracking server list
      88 spa-0                        🇪🇸es 🇦🇷ar 🇲🇽mx 🇨🇴co: EasyList Spanish
     180 spa-1                        🇪🇸es 🇦🇷ar 🇧🇷br 🇵🇹pt: AdGuard Spanish/Portuguese
       0 ublock-annoyances            uBlock filters – Annoyances
@@ -68,6 +68,6 @@ SKIP  ublock-experimental          uBO's own staging list; known to break sites
     101 ublock-privacy               uBlock filters – Privacy
       8 ublock-quick-fixes           uBlock filters – Quick fixes
 SKIP  ublock-unbreak               allow rules only
-    607 urlhaus-1                    Online Malicious URL Blocklist
+    606 urlhaus-1                    Online Malicious URL Blocklist
 
-lists used 67/67 | raw 185351 | exceptions 106 | final (subdomains collapsed) 167570 | NextDNS part 3537
+lists used 67/67 | raw 185429 | exceptions 106 | final (subdomains collapsed) 167763 | NextDNS part 3537
